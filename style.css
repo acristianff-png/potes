@@ -1,6 +1,6 @@
 /* ============================================================================
    CASCATA FINANCEIRA · UI fintech minimalista
-   Mason jars CSS + moedas animadas
+   Paleta: roxo (necessidades) · laranja (desejos) · verde (investimentos)
    ============================================================================ */
 
 :root {
@@ -8,7 +8,7 @@
   --bg:           #FAFAF7;
   --bg-card:      #FFFFFF;
   --bg-subtle:    #F4F4F0;
-  --bg-input:    #F7F7F4;
+  --bg-input:     #F7F7F4;
 
   /* Ink */
   --ink:          #0A0A0A;
@@ -20,6 +20,19 @@
   --line:         rgba(10, 10, 10, 0.06);
   --line-mid:     rgba(10, 10, 10, 0.10);
   --line-strong:  rgba(10, 10, 10, 0.18);
+
+  /* Cores das áreas */
+  --c-needs:        #5C4B96;   /* roxo profundo */
+  --c-needs-soft:   #EDE9F5;
+  --c-needs-deep:   #3D3070;
+
+  --c-wants:        #C5571F;   /* laranja queimado */
+  --c-wants-soft:   #FAEDDF;
+  --c-wants-deep:   #8A3A10;
+
+  --c-invest:       #2F6B4A;   /* verde-floresta */
+  --c-invest-soft:  #E3EFE8;
+  --c-invest-deep:  #1F4A33;
 
   /* Glass do pote */
   --glass-edge:    rgba(10, 10, 10, 0.14);
@@ -35,7 +48,7 @@
   --glass-shine:   rgba(255, 255, 255, 0.85);
   --jar-shadow:    rgba(10, 10, 10, 0.18);
 
-  /* Moedas - paleta realista */
+  /* Moedas - paleta metálica */
   --gold-1:    #F2D77A;
   --gold-2:    #D9B247;
   --gold-3:    #9C7820;
@@ -51,12 +64,10 @@
   --font-serif:  'Instrument Serif', 'Times New Roman', serif;
   --font-mono:   'JetBrains Mono', ui-monospace, monospace;
 
-  /* Curvas */
-  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-coin:  cubic-bezier(0.34, 1.45, 0.55, 1);
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-coin:   cubic-bezier(0.34, 1.45, 0.55, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  /* Raios */
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 18px;
@@ -74,7 +85,6 @@ html, body {
   min-height: 100vh;
 }
 
-/* Vinheta sutil estilo "foto de produto" */
 .vignette {
   position: fixed; inset: 0;
   background:
@@ -102,29 +112,23 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 16px 0 40px;
+  padding: 16px 0 32px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 48px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-sans);
+  display: flex; align-items: center; gap: 10px;
 }
 .brand__dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
+  width: 10px; height: 10px; border-radius: 50%;
   background: var(--ink);
-  display: inline-block;
 }
 .brand__name {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 22px;
-  color: var(--ink);
   letter-spacing: -0.01em;
 }
 .brand__tag {
@@ -136,10 +140,7 @@ html, body {
 }
 
 .salary {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
 }
 .salary__label {
   font-family: var(--font-mono);
@@ -149,9 +150,7 @@ html, body {
   color: var(--ink-faint);
 }
 .salary__input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: flex; align-items: center; gap: 4px;
   background: var(--bg-card);
   border: 1px solid var(--line-mid);
   border-radius: var(--r-md);
@@ -169,8 +168,7 @@ html, body {
   font-size: 24px;
   font-weight: 500;
   background: transparent;
-  border: none;
-  outline: none;
+  border: none; outline: none;
   width: 160px;
   color: var(--ink);
   letter-spacing: -0.02em;
@@ -182,16 +180,78 @@ html, body {
   color: var(--bg);
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   transition: background 180ms, transform 180ms;
 }
 .salary__save:hover { background: var(--ink-soft); }
 .salary__save:active { transform: scale(0.95); }
 
 /* ============================================================================
-   GRID DAS ÁREAS
+   CENTERPIECE · pote central com salário líquido
+   ============================================================================ */
+.centerpiece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-top: 16px;
+}
+
+.centerpiece__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.centerpiece__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+  text-align: center;
+}
+.centerpiece__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.centerpiece__value {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+/* Canos descendentes */
+.pipes {
+  width: 100%;
+  max-width: 720px;
+  height: 90px;
+  margin: 0 auto;
+  pointer-events: none;
+  margin-bottom: -8px;
+}
+.pipes__path {
+  fill: none;
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+  opacity: 0.55;
+  animation: flow 4s linear infinite;
+}
+.pipes__path--needs    { stroke: var(--c-needs); }
+.pipes__path--wants    { stroke: var(--c-wants); }
+.pipes__path--invest   { stroke: var(--c-invest); }
+@keyframes flow {
+  to { stroke-dashoffset: -32; }
+}
+
+/* ============================================================================
+   ÁREAS · grid
    ============================================================================ */
 .areas {
   display: grid;
@@ -202,19 +262,37 @@ html, body {
 @media (max-width: 980px) {
   .areas { grid-template-columns: 1fr; }
   .app { padding: 24px 20px 48px; }
+  .pipes { display: none; }
 }
 
 .area {
-  background: transparent;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  --area-color:      var(--ink);
+  --area-color-soft: var(--bg-subtle);
+  --area-color-deep: var(--ink);
+}
+.area--needs  {
+  --area-color:      var(--c-needs);
+  --area-color-soft: var(--c-needs-soft);
+  --area-color-deep: var(--c-needs-deep);
+}
+.area--wants  {
+  --area-color:      var(--c-wants);
+  --area-color-soft: var(--c-wants-soft);
+  --area-color-deep: var(--c-wants-deep);
+}
+.area--invest {
+  --area-color:      var(--c-invest);
+  --area-color-soft: var(--c-invest-soft);
+  --area-color-deep: var(--c-invest-deep);
 }
 
 .area__head {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
@@ -223,8 +301,11 @@ html, body {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--ink-mute);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  background: var(--area-color-soft);
+  color: var(--area-color-deep);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 .area__name {
   font-family: var(--font-serif);
@@ -243,14 +324,13 @@ html, body {
 }
 
 /* ============================================================================
-   JAR · O POTE EM SI
+   JAR · pote em si
    ============================================================================ */
 .jar-stage {
   display: flex;
   justify-content: center;
   align-items: flex-end;
   padding: 16px 0 8px;
-  perspective: 600px;
 }
 
 .jar {
@@ -259,11 +339,20 @@ html, body {
   height: 280px;
 }
 
-/* Tampa - retângulo achatado no topo */
+/* Pote central — maior */
+.jar--central {
+  width: 260px;
+  height: 340px;
+}
+.jar--central .jar__lid  { height: 10px; width: 80%; }
+.jar--central .jar__neck { height: 28px; }
+.jar--central .jar__body { top: 32px; }
+.jar--central .jar__shadow { bottom: -16px; height: 18px; width: 92%; }
+
+/* Tampa */
 .jar__lid {
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 0; left: 50%;
   transform: translateX(-50%);
   width: 78%;
   height: 8px;
@@ -274,11 +363,10 @@ html, body {
   z-index: 3;
 }
 
-/* Gargalo - estreitamento abaixo da tampa */
+/* Gargalo */
 .jar__neck {
   position: absolute;
-  top: 6px;
-  left: 50%;
+  top: 6px; left: 50%;
   transform: translateX(-50%);
   width: 80%;
   height: 22px;
@@ -288,31 +376,25 @@ html, body {
   z-index: 2;
 }
 
-/* Corpo - cilindro principal */
+/* Corpo */
 .jar__body {
   position: absolute;
-  top: 26px;
-  left: 0;
-  right: 0;
-  bottom: 18px;
+  top: 26px; left: 0; right: 0; bottom: 18px;
   background: var(--glass-fill);
   border: 1px solid var(--glass-edge);
   border-top: 1px solid var(--glass-edge-2);
   border-radius: 6px 6px 18px 18px / 6px 6px 22px 22px;
   overflow: hidden;
-  /* Pequena profundidade inferior */
   box-shadow:
     inset 0 -16px 24px -16px rgba(10,10,10,0.10),
     inset 0 6px 12px -6px rgba(255,255,255,0.6),
     0 8px 20px -10px rgba(10,10,10,0.06);
 }
 
-/* Borda inferior arredondada simulando vidro */
+/* Borda inferior arredondada */
 .jar__rim {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 8px;
   background: linear-gradient(180deg,
     transparent 0%,
@@ -321,13 +403,11 @@ html, body {
   pointer-events: none;
 }
 
-/* Reflexo lateral esquerdo - faixa vertical brilhante */
+/* Reflexos laterais */
 .jar__shine {
   position: absolute;
-  top: 8%;
-  left: 8%;
-  width: 5%;
-  height: 80%;
+  top: 8%; left: 8%;
+  width: 5%; height: 80%;
   background: linear-gradient(180deg,
     var(--glass-shine) 0%,
     rgba(255,255,255,0.2) 60%,
@@ -338,20 +418,17 @@ html, body {
   z-index: 2;
 }
 .jar__shine--right {
-  left: auto;
-  right: 12%;
+  left: auto; right: 12%;
   width: 2.5%;
   opacity: 0.5;
 }
 
-/* Sombra projetada no "chão" */
+/* Sombra projetada */
 .jar__shadow {
   position: absolute;
-  bottom: -14px;
-  left: 50%;
+  bottom: -14px; left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  height: 14px;
+  width: 90%; height: 14px;
   background: radial-gradient(ellipse at center,
     var(--jar-shadow) 0%,
     transparent 70%);
@@ -359,7 +436,7 @@ html, body {
   z-index: -1;
 }
 
-/* Container das moedas (clipado pelo jar__body) */
+/* Container das moedas */
 .jar__coins {
   position: absolute;
   inset: 0;
@@ -367,7 +444,7 @@ html, body {
 }
 
 /* ============================================================================
-   MOEDA · cada moeda é uma div com gradiente metálico
+   MOEDAS
    ============================================================================ */
 .coin {
   position: absolute;
@@ -379,7 +456,6 @@ html, body {
   opacity: 0;
   animation: coin-drop 850ms var(--ease-coin) forwards;
   animation-delay: var(--delay, 0ms);
-  /* Sombrinha entre moedas */
   box-shadow:
     inset -1.5px -1.5px 3px rgba(0,0,0,0.30),
     inset 1.5px 1.5px 3px rgba(255,255,255,0.40),
@@ -387,7 +463,6 @@ html, body {
   will-change: transform, opacity;
 }
 
-/* Sulco/anel da moeda (efeito de borda) */
 .coin::after {
   content: '';
   position: absolute;
@@ -399,7 +474,6 @@ html, body {
     transparent 55%);
 }
 
-/* Símbolo opcional no centro (cifra) */
 .coin::before {
   content: '$';
   position: absolute;
@@ -416,19 +490,15 @@ html, body {
 }
 
 .coin--gold {
-  background:
-    radial-gradient(circle at 35% 30%, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+  background: radial-gradient(circle at 35% 30%, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
 }
 .coin--silver {
-  background:
-    radial-gradient(circle at 35% 30%, var(--silver-1) 0%, var(--silver-2) 50%, var(--silver-3) 100%);
+  background: radial-gradient(circle at 35% 30%, var(--silver-1) 0%, var(--silver-2) 50%, var(--silver-3) 100%);
 }
 .coin--copper {
-  background:
-    radial-gradient(circle at 35% 30%, var(--copper-1) 0%, var(--copper-2) 50%, var(--copper-3) 100%);
+  background: radial-gradient(circle at 35% 30%, var(--copper-1) 0%, var(--copper-2) 50%, var(--copper-3) 100%);
 }
 
-/* Tamanhos variados (sutil) */
 .coin--sm { width: 18px; height: 18px; }
 .coin--lg { width: 26px; height: 26px; }
 .coin--lg::before { font-size: 12px; }
@@ -453,7 +523,7 @@ html, body {
 }
 
 /* ============================================================================
-   SUB-LISTA · potes individuais
+   SUB-LISTA
    ============================================================================ */
 .sublist {
   display: flex;
@@ -464,7 +534,7 @@ html, body {
 .sub-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 18px 1fr auto;
   align-items: center;
   gap: 10px;
   padding: 12px 4px;
@@ -474,11 +544,14 @@ html, body {
   cursor: pointer;
   text-align: left;
   font-family: var(--font-sans);
-  transition: padding 200ms var(--ease-out), background 180ms;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  transition: padding 200ms var(--ease-out), background 180ms, border-left-color 180ms;
 }
 .sub-row:hover {
   padding-left: 12px;
-  background: linear-gradient(90deg, var(--bg-subtle), transparent);
+  background: linear-gradient(90deg, var(--area-color-soft), transparent 70%);
+  border-left-color: var(--area-color);
 }
 .sub-row:last-child { border-bottom: none; }
 
@@ -486,12 +559,12 @@ html, body {
   font-size: 14px;
   line-height: 1;
   text-align: center;
-  filter: grayscale(0.05);
 }
 .sub-row__icon--blank {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--ink-faint);
+  background: var(--area-color);
+  opacity: 0.6;
   margin: 0 auto;
 }
 
@@ -558,19 +631,16 @@ html, body {
   width: 22px; height: 22px;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   font-size: 16px;
-  font-weight: 400;
   color: var(--ink);
   transition: all 180ms;
 }
-.addbtn:hover { color: var(--ink); }
+.addbtn:hover { color: var(--area-color-deep); }
 .addbtn:hover .addbtn__icon {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
+  background: var(--area-color);
+  color: #FFF;
+  border-color: var(--area-color);
 }
 
 /* ============================================================================
@@ -599,9 +669,9 @@ html, body {
   content: '';
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #4A9D6E;
+  background: var(--c-invest);
 }
-.footbar__status.is-error::before { background: #C44; }
+.footbar__status.is-error::before { background: var(--c-wants); }
 .footbar__status.is-loading::before {
   background: var(--ink-mute);
   animation: pulse 1s ease-in-out infinite;
@@ -645,6 +715,15 @@ html, body {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* O modal adquire a cor da área enquanto está aberto */
+.modal[data-area="NECESSIDADES"]  .modal__eyebrow { color: var(--c-needs-deep); }
+.modal[data-area="DESEJOS"]       .modal__eyebrow { color: var(--c-wants-deep); }
+.modal[data-area="INVESTIMENTOS"] .modal__eyebrow { color: var(--c-invest-deep); }
+
+.modal[data-area="NECESSIDADES"]  .btn--primary { background: var(--c-needs);  }
+.modal[data-area="DESEJOS"]       .btn--primary { background: var(--c-wants);  }
+.modal[data-area="INVESTIMENTOS"] .btn--primary { background: var(--c-invest); }
+
 .modal__close {
   position: absolute;
   top: 14px; right: 14px;
@@ -654,9 +733,7 @@ html, body {
   color: var(--ink-mute);
   cursor: pointer;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   transition: background 150ms, color 150ms;
 }
 .modal__close:hover { background: var(--bg-subtle); color: var(--ink); }
@@ -686,10 +763,7 @@ html, body {
   font-size: 13px;
   font-weight: 500;
   color: var(--ink-soft);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
 }
 .field__label small {
   font-weight: 400;
@@ -728,17 +802,17 @@ html, body {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 150ms, background 150ms, color 150ms;
+  transition: transform 150ms, background 150ms, color 150ms, filter 150ms;
 }
 .btn--primary {
   background: var(--ink);
-  color: var(--bg);
+  color: #FFF;
   margin-left: auto;
 }
-.btn--primary:hover { background: var(--ink-soft); transform: translateY(-1px); }
+.btn--primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .btn--ghost {
   background: transparent;
   color: var(--ink-mute);
   padding: 12px 8px;
 }
-.btn--ghost:hover { color: #C44; }
+.btn--ghost:hover { color: var(--c-wants); }
