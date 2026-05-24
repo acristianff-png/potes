@@ -1,663 +1,744 @@
 /* ============================================================================
-   CASCATA FINANCEIRA — Estilos
-   Paleta: papel cru + tintas profundas. Tipografia editorial.
+   CASCATA FINANCEIRA · UI fintech minimalista
+   Mason jars CSS + moedas animadas
    ============================================================================ */
 
 :root {
-  /* Cores base */
-  --paper:        #F4EFE6;
-  --paper-deep:   #ECE5D6;
-  --ink:          #1A1F2B;
-  --ink-soft:     #3D4658;
-  --ink-mute:     #6B7383;
-  --line:         #1A1F2B14;
-  --line-strong:  #1A1F2B30;
+  /* Background */
+  --bg:           #FAFAF7;
+  --bg-card:      #FFFFFF;
+  --bg-subtle:    #F4F4F0;
+  --bg-input:    #F7F7F4;
 
-  /* Cores das áreas */
-  --c-needs:        #2C4E7A;
-  --c-needs-glow:   #4A78AD;
-  --c-wants:        #B85A2C;
-  --c-wants-glow:   #E08550;
-  --c-invest:       #355E4A;
-  --c-invest-glow:  #5A8C73;
+  /* Ink */
+  --ink:          #0A0A0A;
+  --ink-soft:     #2E2E2E;
+  --ink-mute:     #6B6B6B;
+  --ink-faint:    #A0A0A0;
 
-  /* Pote central */
-  --c-central:      #1A1F2B;
-  --c-central-glow: #4A5870;
+  /* Lines */
+  --line:         rgba(10, 10, 10, 0.06);
+  --line-mid:     rgba(10, 10, 10, 0.10);
+  --line-strong:  rgba(10, 10, 10, 0.18);
+
+  /* Glass do pote */
+  --glass-edge:    rgba(10, 10, 10, 0.14);
+  --glass-edge-2:  rgba(10, 10, 10, 0.22);
+  --glass-fill:    linear-gradient(
+                     90deg,
+                     rgba(255,255,255,0) 0%,
+                     rgba(255,255,255,0.35) 20%,
+                     rgba(255,255,255,0.55) 50%,
+                     rgba(255,255,255,0.35) 80%,
+                     rgba(255,255,255,0) 100%
+                   );
+  --glass-shine:   rgba(255, 255, 255, 0.85);
+  --jar-shadow:    rgba(10, 10, 10, 0.18);
+
+  /* Moedas - paleta realista */
+  --gold-1:    #F2D77A;
+  --gold-2:    #D9B247;
+  --gold-3:    #9C7820;
+  --silver-1:  #ECECEC;
+  --silver-2:  #BFBFBF;
+  --silver-3:  #7F7F7F;
+  --copper-1:  #E0A170;
+  --copper-2:  #B86F3C;
+  --copper-3:  #7A4520;
 
   /* Tipografia */
-  --font-display: 'Fraunces', 'Times New Roman', serif;
-  --font-body:    'Manrope', system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+  --font-sans:   'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --font-serif:  'Instrument Serif', 'Times New Roman', serif;
+  --font-mono:   'JetBrains Mono', ui-monospace, monospace;
 
-  /* Geometria */
-  --r-md: 14px;
-  --r-lg: 22px;
+  /* Curvas */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-coin:  cubic-bezier(0.34, 1.45, 0.55, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  /* Curvas de animação */
-  --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-fill: 1400ms;
+  /* Raios */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  background: var(--paper);
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
 }
 
-/* --- Fundo atmosférico ---------------------------------------------------- */
-.bg-noise {
+/* Vinheta sutil estilo "foto de produto" */
+.vignette {
   position: fixed; inset: 0;
-  background-image:
-    radial-gradient(circle at 1px 1px, var(--ink) 0.5px, transparent 0);
-  background-size: 4px 4px;
-  opacity: 0.03;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%,
+      transparent 0%,
+      transparent 50%,
+      rgba(10, 10, 10, 0.04) 100%);
   pointer-events: none;
   z-index: 0;
 }
-.bg-glow {
-  position: fixed;
-  width: 60vw; height: 60vw;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.18;
-  pointer-events: none;
-  z-index: 0;
-}
-.bg-glow--top    { top: -25vw;    left: -10vw; background: var(--c-needs); }
-.bg-glow--bottom { bottom: -30vw; right: -10vw; background: var(--c-invest); }
 
-/* --- App container -------------------------------------------------------- */
 .app {
   position: relative;
   z-index: 1;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 48px 32px 80px;
+  padding: 32px 32px 64px;
 }
 
-/* --- Hero ----------------------------------------------------------------- */
-.hero {
+/* ============================================================================
+   TOPBAR
+   ============================================================================ */
+.topbar {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 32px;
-  padding-bottom: 32px;
-  margin-bottom: 48px;
+  gap: 24px;
+  padding: 16px 0 40px;
   border-bottom: 1px solid var(--line);
+  margin-bottom: 48px;
   flex-wrap: wrap;
 }
 
-.hero__eyebrow {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  margin-bottom: 12px;
-}
-
-.hero__title {
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-}
-.hero__title em {
-  font-style: italic;
-  font-weight: 600;
-  color: var(--c-needs);
-}
-
-.hero__salary {
+.brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: var(--paper-deep);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  padding: 10px 14px 10px 18px;
+  gap: 10px;
+  font-family: var(--font-sans);
 }
-.hero__label {
+.brand__dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--ink);
+  display: inline-block;
+}
+.brand__name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.brand__tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  margin-left: 4px;
+}
+
+.salary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.salary__label {
   font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ink-mute);
-  margin-right: 8px;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
 }
-.hero__input-wrap { display: flex; align-items: baseline; gap: 6px; }
-.hero__currency {
+.salary__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  padding: 8px 8px 8px 16px;
+  transition: border-color 200ms;
+}
+.salary__input-wrap:focus-within { border-color: var(--ink); }
+.salary__currency {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ink-mute);
 }
-.hero__input {
+.salary__input {
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
   background: transparent;
   border: none;
   outline: none;
-  width: 140px;
+  width: 160px;
   color: var(--ink);
-}
-.hero__save {
-  background: var(--ink);
-  color: var(--paper);
-  border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 200ms var(--ease-liquid), background 200ms;
-}
-.hero__save:hover { background: var(--c-needs); transform: translateY(-1px); }
-.hero__save:active { transform: translateY(0); }
-
-/* --- Pote central --------------------------------------------------------- */
-.central {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 0;
-  position: relative;
-}
-
-.central__pot {
-  /* O pote é uma cápsula com boca aberta no topo */
-  position: relative;
-  width: 220px;
-  height: 220px;
-  border-radius: 50% 50% 24px 24px / 18% 18% 24px 24px;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--c-central) 4%, var(--paper-deep)) 0%,
-    color-mix(in srgb, var(--c-central) 8%, var(--paper-deep)) 100%);
-  border: 1.5px solid var(--ink);
-  overflow: hidden;
-  box-shadow:
-    inset 0 6px 16px rgba(0,0,0,0.08),
-    0 30px 60px -20px rgba(26,31,43,0.35),
-    0 8px 16px rgba(26,31,43,0.08);
-  color: var(--c-central);
-}
-
-.central__lip {
-  position: absolute;
-  top: -6px; left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 14px;
-  background: var(--ink);
-  border-radius: 50%;
-  z-index: 3;
-}
-
-.central__liquid {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: var(--fill, 0%);
-  background: linear-gradient(180deg,
-    var(--c-central-glow) 0%,
-    var(--c-central) 100%);
-  transition: height var(--dur-fill) var(--ease-liquid);
-  color: var(--c-central);
-}
-.central__wave {
-  position: absolute;
-  top: -16px; left: -50%;
-  width: 200%;
-  height: 32px;
-  color: var(--c-central-glow);
-}
-
-.central__content {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  mix-blend-mode: difference;
-  color: var(--paper);
-}
-.central__caption {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.7;
-  margin-bottom: 6px;
-}
-.central__value {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 28px;
   letter-spacing: -0.02em;
 }
+.salary__save {
+  width: 32px; height: 32px;
+  border: none;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 180ms, transform 180ms;
+}
+.salary__save:hover { background: var(--ink-soft); }
+.salary__save:active { transform: scale(0.95); }
 
-/* Canos descendentes */
-.pipes {
-  width: 100%;
-  max-width: 900px;
-  height: 120px;
-  margin-top: -8px;
-  pointer-events: none;
-}
-.pipes__path {
-  fill: none;
-  stroke: var(--line-strong);
-  stroke-width: 1.5;
-  stroke-dasharray: 6 4;
-  animation: flow 3s linear infinite;
-}
-@keyframes flow {
-  to { stroke-dashoffset: -100; }
-}
-
-/* --- Áreas (grid 50/30/20) ------------------------------------------------ */
+/* ============================================================================
+   GRID DAS ÁREAS
+   ============================================================================ */
 .areas {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  margin-top: -16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .areas { grid-template-columns: 1fr; }
-  .pipes { display: none; }
-  .central { margin-bottom: 24px; }
+  .app { padding: 24px 20px 48px; }
 }
 
 .area {
-  background: var(--paper-deep);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 24px 20px;
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  position: relative;
-  overflow: hidden;
 }
-.area::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--area-color);
-}
-.area--necessidades   { --area-color: var(--c-needs);   --area-glow: var(--c-needs-glow); }
-.area--desejos        { --area-color: var(--c-wants);   --area-glow: var(--c-wants-glow); }
-.area--investimentos  { --area-color: var(--c-invest);  --area-glow: var(--c-invest-glow); }
 
-.area__header {
+.area__head {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: baseline;
   gap: 12px;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
 }
 .area__pct {
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--area-color);
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-mute);
+  letter-spacing: 0.06em;
 }
 .area__name {
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-serif);
   font-style: italic;
+  font-weight: 400;
   font-size: 22px;
   letter-spacing: -0.02em;
+  color: var(--ink);
 }
 .area__total {
   font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
-.area__pots {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 16px;
-  min-height: 140px;
-}
-
-.area__add {
-  align-self: flex-start;
-  background: transparent;
-  border: 1.5px dashed var(--line-strong);
-  color: var(--ink-soft);
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 200ms;
-}
-.area__add span {
-  font-size: 18px;
-  line-height: 1;
-  color: var(--area-color);
-}
-.area__add:hover {
-  border-color: var(--area-color);
-  color: var(--area-color);
-  background: color-mix(in srgb, var(--area-color) 5%, transparent);
-}
-
-/* --- Pote individual ------------------------------------------------------ */
-.pot {
-  --area-color: var(--c-needs);
-  --area-glow: var(--c-needs-glow);
-  position: relative;
-  cursor: pointer;
+/* ============================================================================
+   JAR · O POTE EM SI
+   ============================================================================ */
+.jar-stage {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding-top: 4px;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 16px 0 8px;
+  perspective: 600px;
 }
 
-.pot__jar {
-  /* Recipiente de vidro com boca estreita */
+.jar {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1.25;
-  border-radius: 40% 40% 16px 16px / 24% 24% 16px 16px;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--area-color) 3%, var(--paper)) 0%,
-    color-mix(in srgb, var(--area-color) 7%, var(--paper)) 100%);
-  border: 1.5px solid var(--ink);
-  overflow: hidden;
-  box-shadow:
-    inset 0 4px 10px rgba(0,0,0,0.06),
-    inset -3px 0 8px rgba(0,0,0,0.04),
-    0 12px 24px -10px rgba(26,31,43,0.25),
-    0 4px 8px rgba(26,31,43,0.06);
-  transition: transform 220ms var(--ease-liquid), box-shadow 220ms;
-}
-.pot:hover .pot__jar {
-  transform: translateY(-3px);
-  box-shadow:
-    inset 0 4px 10px rgba(0,0,0,0.06),
-    0 20px 32px -10px rgba(26,31,43,0.35),
-    0 4px 8px rgba(26,31,43,0.08);
+  width: 200px;
+  height: 280px;
 }
 
-.pot__lip {
+/* Tampa - retângulo achatado no topo */
+.jar__lid {
   position: absolute;
-  top: -4px; left: 50%;
+  top: 0;
+  left: 50%;
   transform: translateX(-50%);
-  width: 70%;
+  width: 78%;
   height: 8px;
-  background: var(--ink);
-  border-radius: 50%;
-  z-index: 4;
-}
-
-.pot__liquid {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: var(--fill, 0%);
   background: linear-gradient(180deg,
-    var(--area-glow) 0%,
-    var(--area-color) 100%);
-  transition: height var(--dur-fill) var(--ease-liquid);
-  transition-delay: var(--fill-delay, 0ms);
-  color: var(--area-glow);
-}
-.pot__wave {
-  position: absolute;
-  top: -10px; left: -50%;
-  width: 200%;
-  height: 20px;
-  color: var(--area-glow);
+    rgba(10,10,10,0.08) 0%,
+    rgba(10,10,10,0.14) 100%);
+  border-radius: 3px 3px 0 0;
+  z-index: 3;
 }
 
-.pot__shine {
-  /* Brilho diagonal estilo vidro */
+/* Gargalo - estreitamento abaixo da tampa */
+.jar__neck {
   position: absolute;
-  top: 8%;
-  left: 14%;
-  width: 12%;
-  height: 60%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.05));
-  border-radius: 50%;
-  filter: blur(2px);
-  z-index: 3;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 22px;
+  border-left: 1px solid var(--glass-edge);
+  border-right: 1px solid var(--glass-edge);
+  background: var(--glass-fill);
+  z-index: 2;
+}
+
+/* Corpo - cilindro principal */
+.jar__body {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-edge);
+  border-top: 1px solid var(--glass-edge-2);
+  border-radius: 6px 6px 18px 18px / 6px 6px 22px 22px;
+  overflow: hidden;
+  /* Pequena profundidade inferior */
+  box-shadow:
+    inset 0 -16px 24px -16px rgba(10,10,10,0.10),
+    inset 0 6px 12px -6px rgba(255,255,255,0.6),
+    0 8px 20px -10px rgba(10,10,10,0.06);
+}
+
+/* Borda inferior arredondada simulando vidro */
+.jar__rim {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(10,10,10,0.06) 50%,
+    rgba(10,10,10,0.10) 100%);
   pointer-events: none;
 }
 
-.pot__icon {
+/* Reflexo lateral esquerdo - faixa vertical brilhante */
+.jar__shine {
   position: absolute;
-  top: 22%;
+  top: 8%;
+  left: 8%;
+  width: 5%;
+  height: 80%;
+  background: linear-gradient(180deg,
+    var(--glass-shine) 0%,
+    rgba(255,255,255,0.2) 60%,
+    transparent 100%);
+  filter: blur(0.6px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+.jar__shine--right {
+  left: auto;
+  right: 12%;
+  width: 2.5%;
+  opacity: 0.5;
+}
+
+/* Sombra projetada no "chão" */
+.jar__shadow {
+  position: absolute;
+  bottom: -14px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 22px;
-  z-index: 2;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  width: 90%;
+  height: 14px;
+  background: radial-gradient(ellipse at center,
+    var(--jar-shadow) 0%,
+    transparent 70%);
+  filter: blur(4px);
+  z-index: -1;
 }
 
-.pot__value-inside {
+/* Container das moedas (clipado pelo jar__body) */
+.jar__coins {
   position: absolute;
-  bottom: 8%;
-  left: 0; right: 0;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--paper);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 400ms ease 1400ms;
+  inset: 0;
+  z-index: 1;
 }
-.pot.is-filled .pot__value-inside { opacity: 1; }
 
-.pot__label {
-  font-family: var(--font-body);
-  font-size: 13px;
+/* ============================================================================
+   MOEDA · cada moeda é uma div com gradiente metálico
+   ============================================================================ */
+.coin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  transform-origin: center;
+  transform: translateY(-380px) rotate(var(--rot, 0deg)) scale(0.7);
+  opacity: 0;
+  animation: coin-drop 850ms var(--ease-coin) forwards;
+  animation-delay: var(--delay, 0ms);
+  /* Sombrinha entre moedas */
+  box-shadow:
+    inset -1.5px -1.5px 3px rgba(0,0,0,0.30),
+    inset 1.5px 1.5px 3px rgba(255,255,255,0.40),
+    0 1px 2px rgba(0,0,0,0.18);
+  will-change: transform, opacity;
+}
+
+/* Sulco/anel da moeda (efeito de borda) */
+.coin::after {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0,0,0,0.18);
+  background: radial-gradient(circle at 30% 28%,
+    rgba(255,255,255,0.45) 0%,
+    transparent 55%);
+}
+
+/* Símbolo opcional no centro (cifra) */
+.coin::before {
+  content: '$';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.30);
+  text-shadow: 0 0.5px 0 rgba(255,255,255,0.4);
+  z-index: 2;
+}
+
+.coin--gold {
+  background:
+    radial-gradient(circle at 35% 30%, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+}
+.coin--silver {
+  background:
+    radial-gradient(circle at 35% 30%, var(--silver-1) 0%, var(--silver-2) 50%, var(--silver-3) 100%);
+}
+.coin--copper {
+  background:
+    radial-gradient(circle at 35% 30%, var(--copper-1) 0%, var(--copper-2) 50%, var(--copper-3) 100%);
+}
+
+/* Tamanhos variados (sutil) */
+.coin--sm { width: 18px; height: 18px; }
+.coin--lg { width: 26px; height: 26px; }
+.coin--lg::before { font-size: 12px; }
+.coin--sm::before { font-size: 8px; }
+
+@keyframes coin-drop {
+  0% {
+    transform: translateY(-380px) rotate(var(--rot, 0deg)) scale(0.7);
+    opacity: 0;
+  }
+  15% { opacity: 1; }
+  70% {
+    transform: translateY(8px) rotate(calc(var(--rot, 0deg) + 20deg)) scale(1);
+  }
+  85% {
+    transform: translateY(-3px) rotate(calc(var(--rot, 0deg) + 25deg)) scale(1);
+  }
+  100% {
+    transform: translateY(0) rotate(calc(var(--rot, 0deg) + 22deg)) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   SUB-LISTA · potes individuais
+   ============================================================================ */
+.sublist {
+  display: flex;
+  flex-direction: column;
+  min-height: 60px;
+}
+
+.sub-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: padding 200ms var(--ease-out), background 180ms;
+}
+.sub-row:hover {
+  padding-left: 12px;
+  background: linear-gradient(90deg, var(--bg-subtle), transparent);
+}
+.sub-row:last-child { border-bottom: none; }
+
+.sub-row__icon {
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  filter: grayscale(0.05);
+}
+.sub-row__icon--blank {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  margin: 0 auto;
+}
+
+.sub-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.sub-row__name {
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink);
-  text-align: center;
-  line-height: 1.25;
-  max-width: 100%;
+  letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
 }
-
-.pot__meta {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+.sub-row__meta {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--ink-mute);
   letter-spacing: 0.04em;
 }
-.pot__meta strong {
-  color: var(--area-color);
-  font-weight: 700;
+
+.sub-row__value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
-/* Estado vazio */
-.area__pots:empty::after {
+.sublist:empty::after {
   content: 'Nenhum pote ainda';
-  grid-column: 1 / -1;
   align-self: center;
-  text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
   font-style: italic;
-  color: var(--ink-mute);
-  font-size: 15px;
-  padding: 32px 0;
+  color: var(--ink-faint);
+  font-size: 14px;
+  padding: 24px 0;
 }
 
-/* --- Footer --------------------------------------------------------------- */
-.foot {
-  margin-top: 48px;
-  padding-top: 24px;
+/* ============================================================================
+   BOTÃO ADICIONAR
+   ============================================================================ */
+.addbtn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-mute);
+  cursor: pointer;
+  transition: color 180ms;
+}
+.addbtn__icon {
+  width: 22px; height: 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink);
+  transition: all 180ms;
+}
+.addbtn:hover { color: var(--ink); }
+.addbtn:hover .addbtn__icon {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+/* ============================================================================
+   FOOTBAR
+   ============================================================================ */
+.footbar {
+  margin-top: 56px;
+  padding-top: 20px;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-mute);
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
-.foot__status {
+.footbar__status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
-.foot__status::before {
+.footbar__status::before {
   content: '';
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--c-invest);
+  background: #4A9D6E;
 }
-.foot__status.is-error::before { background: var(--c-wants); }
-.foot__status.is-loading::before { background: var(--c-needs); animation: pulse 1s infinite; }
+.footbar__status.is-error::before { background: #C44; }
+.footbar__status.is-loading::before {
+  background: var(--ink-mute);
+  animation: pulse 1s ease-in-out infinite;
+}
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
 }
 
-/* --- Modal ---------------------------------------------------------------- */
+/* ============================================================================
+   MODAL
+   ============================================================================ */
 .modal {
   position: fixed; inset: 0; z-index: 100;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
 .modal[hidden] { display: none; }
+
 .modal__backdrop {
   position: absolute; inset: 0;
-  background: rgba(26,31,43,0.4);
+  background: rgba(10,10,10,0.45);
   backdrop-filter: blur(8px);
-  animation: fadeIn 200ms;
+  -webkit-backdrop-filter: blur(8px);
+  animation: fade-in 200ms;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
 .modal__card {
   position: relative;
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: var(--bg-card);
   border-radius: var(--r-lg);
-  padding: 32px 28px 28px;
+  padding: 36px 32px 28px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.3);
-  animation: slideUp 280ms var(--ease-liquid);
+  max-width: 420px;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.3);
+  animation: slide-up 320ms var(--ease-out);
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
 .modal__close {
   position: absolute;
   top: 14px; right: 14px;
   width: 32px; height: 32px;
   background: transparent;
   border: none;
-  font-size: 24px;
   color: var(--ink-mute);
   cursor: pointer;
   border-radius: 8px;
-  transition: background 150ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms, color 150ms;
 }
-.modal__close:hover { background: var(--line); color: var(--ink); }
+.modal__close:hover { background: var(--bg-subtle); color: var(--ink); }
 
-.modal__title {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-}
-.modal__subtitle {
+.modal__eyebrow {
   display: block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ink-mute);
-  margin-top: 4px;
-  margin-bottom: 24px;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+.modal__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
 }
 
-.modal__form { display: flex; flex-direction: column; gap: 16px; }
+.modal__form { display: flex; flex-direction: column; gap: 18px; }
 
-.field { display: flex; flex-direction: column; gap: 6px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
 .field__label {
-  font-family: var(--font-body);
-  font-size: 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
   font-weight: 500;
   color: var(--ink-soft);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .field__label small {
   font-weight: 400;
-  color: var(--ink-mute);
+  font-size: 11px;
+  color: var(--ink-faint);
 }
 .field__input {
-  background: var(--paper-deep);
+  background: var(--bg-input);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 14px;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 15px;
   color: var(--ink);
   outline: none;
-  transition: border-color 150ms;
+  transition: border-color 150ms, background 150ms;
 }
-.field__input:focus { border-color: var(--ink); }
+.field__input:focus {
+  border-color: var(--ink);
+  background: var(--bg-card);
+}
 
 .modal__actions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .btn {
   border: none;
   border-radius: 10px;
   padding: 12px 22px;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 150ms, background 150ms;
+  transition: transform 150ms, background 150ms, color 150ms;
 }
 .btn--primary {
   background: var(--ink);
-  color: var(--paper);
+  color: var(--bg);
+  margin-left: auto;
 }
-.btn--primary:hover { background: var(--c-needs); transform: translateY(-1px); }
+.btn--primary:hover { background: var(--ink-soft); transform: translateY(-1px); }
 .btn--ghost {
   background: transparent;
-  color: var(--c-wants);
+  color: var(--ink-mute);
+  padding: 12px 8px;
 }
-.btn--ghost:hover { background: color-mix(in srgb, var(--c-wants) 10%, transparent); }
+.btn--ghost:hover { color: #C44; }
