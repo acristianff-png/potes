@@ -1,17 +1,26 @@
 /* ============================================================================
    CASCATA FINANCEIRA — Frontend
-   Comunicação com Apps Script + cálculo local + orquestração das animações.
+   Geração de moedas + comunicação com Apps Script.
    ============================================================================ */
 
 // >>> Cole aqui a URL do seu Web App após o Deploy do Apps Script <<<
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbye94J0ETXEMku1xSCWCxpxkQi8H5Y9bnt7Lt2OdS4SrMho9yvRk_Msgy5gUWHtmwBU/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/COLE_AQUI_SUA_URL/exec';
 
-// Tempo total da animação de preenchimento (deve coincidir com --dur-fill no CSS)
-const FILL_DURATION_MS = 1400;
-const STAGGER_DELAY_MS = 80; // delay entre potes da mesma área
+// Quantidades fixas de moedas por área — reforçam visualmente a regra 50/30/20.
+// O front mostra sempre essa proporção; só os valores em R$ é que mudam.
+const MOEDAS_POR_AREA = {
+  NECESSIDADES: 25,
+  DESEJOS:      15,
+  INVESTIMENTOS: 10
+};
+
+// Duração da queda de cada moeda (deve casar com @keyframes coin-drop no CSS)
+const COIN_FALL_MS  = 850;
+const COIN_STAGGER  = 60;   // delay entre moedas
+const COIN_JITTER   = 80;   // jitter aleatório para evitar perfeição mecânica
 
 // ---------------------------------------------------------------------------
-// Estado em memória
+// Estado
 // ---------------------------------------------------------------------------
 let estado = {
   salario: 0,
@@ -23,19 +32,14 @@ let estado = {
 };
 
 // ---------------------------------------------------------------------------
-// Utilitários
+// Helpers
 // ---------------------------------------------------------------------------
-const $ = (sel, ctx = document) => ctx.querySelector(sel);
-const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+const $  = (s, c = document) => c.querySelector(s);
+const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
 
-const fmtBRL = (n) => {
-  if (!isFinite(n)) n = 0;
-  return n.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 2
-  });
-};
+const fmtBRL = (n) => (isFinite(n) ? n : 0).toLocaleString('pt-BR', {
+  style: 'currency', currency: 'BRL', minimumFractionDigits: 2
+});
 
 const parseBRL = (str) => {
   if (typeof str === 'number') return str;
@@ -46,6 +50,10 @@ const parseBRL = (str) => {
   return isFinite(n) ? n : 0;
 };
 
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
+
 const setStatus = (msg, tipo = 'ok') => {
   const el = $('#statusMsg');
   el.textContent = msg;
@@ -54,13 +62,16 @@ const setStatus = (msg, tipo = 'ok') => {
   if (tipo === 'loading') el.classList.add('is-loading');
 };
 
+const randomBetween = (a, b) => a + Math.random() * (b - a);
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 // ---------------------------------------------------------------------------
-// Cálculo local (mesma fórmula do backend, para preview ao vivo)
+// Cálculo local (mesma fórmula do backend)
 // ---------------------------------------------------------------------------
-function recalcularLocal(estadoBase) {
-  const salario = estadoBase.salario || 0;
+function recalcularLocal(base) {
+  const salario = base.salario || 0;
   ['NECESSIDADES', 'DESEJOS', 'INVESTIMENTOS'].forEach(area => {
-    const a = estadoBase.areas[area];
+    const a = base.areas[area];
     const valorArea = salario * a.percentual;
     const soma = a.potes.reduce((s, p) => s + (Number(p.peso) || 0), 0);
     a.valorTotal = Math.round(valorArea * 100) / 100;
@@ -77,145 +88,164 @@ function recalcularLocal(estadoBase) {
       };
     });
   });
-  return estadoBase;
+  return base;
 }
 
 // ---------------------------------------------------------------------------
 // API
 // ---------------------------------------------------------------------------
 async function apiGet() {
-  setStatus('Carregando…', 'loading');
+  setStatus('Carregando', 'loading');
   try {
     const r = await fetch(WEB_APP_URL, { method: 'GET' });
     const data = await r.json();
-    if (!data.ok) throw new Error(data.error || 'Erro desconhecido');
+    if (!data.ok) throw new Error(data.error || 'Erro');
+    setStatus('Pronto');
     return data;
   } catch (err) {
-    setStatus('Falha ao carregar: ' + err.message, 'error');
+    setStatus('Falha: ' + err.message, 'error');
     throw err;
   }
 }
 
 async function apiPost(action, payload) {
-  setStatus('Salvando…', 'loading');
+  setStatus('Salvando', 'loading');
   try {
-    // text/plain evita preflight CORS no Apps Script
     const r = await fetch(WEB_APP_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
       body: JSON.stringify({ action, payload }),
       redirect: 'follow'
     });
     const data = await r.json();
-    if (!data.ok) throw new Error(data.error || 'Erro desconhecido');
-    setStatus('Sincronizado.', 'ok');
+    if (!data.ok) throw new Error(data.error || 'Erro');
+    setStatus('Sincronizado');
     return data;
   } catch (err) {
-    setStatus('Falha ao salvar: ' + err.message, 'error');
+    setStatus('Falha: ' + err.message, 'error');
     throw err;
   }
 }
 
 // ---------------------------------------------------------------------------
-// Render
+// GERAÇÃO DE MOEDAS
+// ---------------------------------------------------------------------------
+/**
+ * Calcula posição de cada moeda em camadas horizontais empilhadas.
+ * Retorna array de { x, y, rot, delay, layer, tipo, size }.
+ */
+function calcularLayoutMoedas(quantidade) {
+  const layout = [];
+  const moedasPorCamada = 5;
+  const alturaCamada = 9;    // px de altura entre camadas
+  const margemLateralPct = 12; // % de margem nas laterais do pote
+
+  for (let i = 0; i < quantidade; i++) {
+    const camada = Math.floor(i / moedasPorCamada);
+    const posNaCamada = i % moedasPorCamada;
+
+    // Posição X: distribui na largura útil + jitter
+    const larguraUtil = 100 - 2 * margemLateralPct;
+    const xBase = margemLateralPct + (posNaCamada + 0.5) * (larguraUtil / moedasPorCamada);
+    const xJitter = randomBetween(-6, 6);
+
+    const x = Math.max(margemLateralPct - 2, Math.min(100 - margemLateralPct + 2, xBase + xJitter));
+
+    layout.push({
+      x:     x,                                    // % horizontal dentro do pote
+      y:     6 + camada * alturaCamada + randomBetween(-2, 2), // px do fundo
+      rot:   randomBetween(-180, 180),             // rotação inicial
+      delay: i * COIN_STAGGER + randomBetween(0, COIN_JITTER),
+      layer: camada * 10 + (i % 3),                // z-index para empilhamento
+      tipo:  pick(['gold', 'silver', 'copper', 'gold', 'gold', 'silver']), // mais ouro
+      size:  pick(['', '', '', 'coin--sm', 'coin--lg']) // maioria normal
+    });
+  }
+  return layout;
+}
+
+function renderMoedas(jarEl, quantidade) {
+  const container = jarEl.querySelector('.jar__coins');
+  // Limpa moedas anteriores
+  container.innerHTML = '';
+
+  const layout = calcularLayoutMoedas(quantidade);
+
+  layout.forEach((pos) => {
+    const coin = document.createElement('div');
+    coin.className = `coin coin--${pos.tipo} ${pos.size}`.trim();
+    coin.style.setProperty('--rot', pos.rot + 'deg');
+    coin.style.setProperty('--delay', pos.delay + 'ms');
+    coin.style.left = `calc(${pos.x}% - 11px)`;
+    coin.style.bottom = pos.y + 'px';
+    coin.style.zIndex = pos.layer;
+    container.appendChild(coin);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RENDER
 // ---------------------------------------------------------------------------
 function render() {
-  // Salário no input + pote central
+  // Salário
   $('#salaryInput').value = estado.salario
     ? estado.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
     : '';
-  $('#centralValue').textContent = fmtBRL(estado.salario);
 
-  // Anima preenchimento do pote central
-  // (preenche 100% pois ele "contém" todo o salário)
-  const central = $('#centralPot');
-  requestAnimationFrame(() => {
-    central.style.setProperty('--fill', estado.salario > 0 ? '85%' : '0%');
-  });
-
-  // Renderiza cada área
+  // Cada área
   ['NECESSIDADES', 'DESEJOS', 'INVESTIMENTOS'].forEach(area => {
     const dados = estado.areas[area];
+
+    // Total da área no header
     $(`#total${area}`).textContent = fmtBRL(dados.valorTotal);
 
-    const container = $(`#pots${area}`);
-    container.innerHTML = '';
+    // Jar: gera moedas se houver dinheiro, caso contrário esvazia
+    const jarEl = document.querySelector(`[data-jar="${area}"]`);
+    if (dados.valorTotal > 0) {
+      renderMoedas(jarEl, MOEDAS_POR_AREA[area]);
+    } else {
+      jarEl.querySelector('.jar__coins').innerHTML = '';
+    }
 
-    // Para escalar o preenchimento visual de cada pote, usamos o MAIOR valor
-    // da área como referência de "pote cheio" (100%). Assim, todos comparam
-    // visualmente entre si dentro da área. Mínimo de 10% para potes ínfimos.
-    const maxValor = Math.max(...dados.potes.map(p => p.valor), 1);
-
-    dados.potes.forEach((pote, idx) => {
-      const fillPct = Math.max(10, Math.round((pote.valor / maxValor) * 95));
-      const el = criarElementoPote(pote, fillPct, idx);
-      container.appendChild(el);
-    });
+    // Sub-lista
+    const sub = $(`#pots${area}`);
+    sub.innerHTML = '';
+    dados.potes
+      .slice()
+      .sort((a, b) => b.valor - a.valor) // maiores primeiro
+      .forEach(p => sub.appendChild(criarLinhaPote(p)));
   });
 }
 
-function criarElementoPote(pote, fillPct, idx) {
-  const wrap = document.createElement('div');
-  wrap.className = 'pot';
-  wrap.dataset.id = pote.id;
-  wrap.dataset.area = pote.area;
-  wrap.style.setProperty('--fill-delay', `${idx * STAGGER_DELAY_MS}ms`);
+function criarLinhaPote(pote) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'sub-row';
+  btn.dataset.id = pote.id;
 
-  wrap.innerHTML = `
-    <div class="pot__jar">
-      <div class="pot__lip"></div>
-      <div class="pot__liquid" style="--fill: 0%;">
-        <svg class="pot__wave" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,20 Q150,0 300,20 T600,20 L600,40 L0,40 Z" fill="currentColor" opacity="0.6">
-            <animateTransform attributeName="transform" type="translate"
-              from="0 0" to="-300 0" dur="${5 + idx}s" repeatCount="indefinite" />
-          </path>
-          <path d="M0,25 Q150,5 300,25 T600,25 L600,40 L0,40 Z" fill="currentColor" opacity="0.95">
-            <animateTransform attributeName="transform" type="translate"
-              from="-300 0" to="0 0" dur="${7 + idx}s" repeatCount="indefinite" />
-          </path>
-        </svg>
-      </div>
-      ${pote.icone ? `<div class="pot__icon">${pote.icone}</div>` : ''}
-      <div class="pot__shine"></div>
-      <div class="pot__value-inside">${fmtBRL(pote.valor)}</div>
-    </div>
-    <span class="pot__label">${escapeHtml(pote.nome)}</span>
-    <span class="pot__meta">
-      peso <strong>${formatPeso(pote.peso)}</strong> · ${pote.pctArea.toFixed(1)}% da área
+  const iconeHtml = pote.icone
+    ? `<span class="sub-row__icon">${escapeHtml(pote.icone)}</span>`
+    : `<span class="sub-row__icon-blank-wrap"><span class="sub-row__icon--blank"></span></span>`;
+
+  btn.innerHTML = `
+    ${iconeHtml}
+    <span class="sub-row__main">
+      <span class="sub-row__name">${escapeHtml(pote.nome)}</span>
+      <span class="sub-row__meta">peso ${formatPeso(pote.peso)} · ${pote.pctArea.toFixed(1)}% da área</span>
     </span>
+    <span class="sub-row__value">${fmtBRL(pote.valor)}</span>
   `;
 
-  // Click para editar
-  wrap.addEventListener('click', () => abrirModal(pote.area, pote));
-
-  // Dispara animação após inserir no DOM
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      const liquid = wrap.querySelector('.pot__liquid');
-      liquid.style.setProperty('--fill', fillPct + '%');
-      liquid.style.height = fillPct + '%';
-      // Marca como preenchido após a duração da animação (mostra o valor)
-      setTimeout(() => wrap.classList.add('is-filled'),
-        FILL_DURATION_MS + (idx * STAGGER_DELAY_MS));
-    }, idx * STAGGER_DELAY_MS);
-  });
-
-  return wrap;
+  btn.addEventListener('click', () => abrirModal(pote.area, pote));
+  return btn;
 }
 
 function formatPeso(p) {
-  return Number.isInteger(p) ? String(p) : p.toFixed(1);
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
+  return Number.isInteger(p) ? String(p) : Number(p).toFixed(1);
 }
 
 // ---------------------------------------------------------------------------
-// Modal (adicionar / editar pote)
+// MODAL
 // ---------------------------------------------------------------------------
 function abrirModal(area, pote = null) {
   $('#modal').hidden = false;
@@ -238,12 +268,10 @@ function abrirModal(area, pote = null) {
     $('#formDelete').hidden = true;
   }
 
-  setTimeout(() => $('#formNome').focus(), 100);
+  setTimeout(() => $('#formNome').focus(), 120);
 }
 
-function fecharModal() {
-  $('#modal').hidden = true;
-}
+function fecharModal() { $('#modal').hidden = true; }
 
 async function submeterModal(e) {
   e.preventDefault();
@@ -257,22 +285,18 @@ async function submeterModal(e) {
   if (!isFinite(peso) || peso <= 0) { alert('Peso deve ser positivo.'); return; }
 
   try {
-    let resp;
-    if (id) {
-      resp = await apiPost('updatePote', { id, nome, area, peso, icone });
-    } else {
-      resp = await apiPost('addPote', { nome, area, peso, icone });
-    }
+    const resp = id
+      ? await apiPost('updatePote', { id, nome, area, peso, icone })
+      : await apiPost('addPote',    { nome, area, peso, icone });
     estado = resp;
     fecharModal();
     render();
-  } catch (_) { /* status já atualizado */ }
+  } catch (_) {}
 }
 
 async function excluirPote() {
   const id = $('#formId').value;
-  if (!id) return;
-  if (!confirm('Excluir este pote?')) return;
+  if (!id || !confirm('Excluir este pote?')) return;
   try {
     const resp = await apiPost('deletePote', { id });
     estado = resp;
@@ -282,7 +306,7 @@ async function excluirPote() {
 }
 
 // ---------------------------------------------------------------------------
-// Atualização do salário
+// SALÁRIO
 // ---------------------------------------------------------------------------
 async function salvarSalario() {
   const valor = parseBRL($('#salaryInput').value);
@@ -295,45 +319,39 @@ async function salvarSalario() {
 }
 
 // ---------------------------------------------------------------------------
-// Bootstrap
+// BOOTSTRAP
 // ---------------------------------------------------------------------------
 async function init() {
-  // Botões "adicionar pote"
+  // Listeners
   $$('[data-add]').forEach(btn => {
     btn.addEventListener('click', () => abrirModal(btn.dataset.add));
   });
-
-  // Modal: fechar
   $$('[data-close]').forEach(el => el.addEventListener('click', fecharModal));
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('#modal').hidden) fecharModal();
   });
-
-  // Modal: submit
   $('#modalForm').addEventListener('submit', submeterModal);
   $('#formDelete').addEventListener('click', excluirPote);
-
-  // Salário
   $('#salarySave').addEventListener('click', salvarSalario);
   $('#salaryInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') salvarSalario();
   });
 
-  // Carrega estado inicial
+  // Carrega
   if (WEB_APP_URL.includes('COLE_AQUI')) {
-    setStatus('Configure a URL do Apps Script em script.js.', 'error');
-    // Modo demo: carrega exemplo offline para visualizar a interface
+    setStatus('Configure a URL do Apps Script em script.js', 'error');
+    // Demo offline
     estado = recalcularLocal({
       salario: 5000,
       areas: {
         NECESSIDADES: { percentual: 0.50, valorTotal: 0, somaPesos: 0, potes: [
-          { id: 'demo1', nome: 'Aluguel', area: 'NECESSIDADES', peso: 3, icone: '🏠' },
-          { id: 'demo2', nome: 'Mercado', area: 'NECESSIDADES', peso: 2, icone: '🛒' },
-          { id: 'demo3', nome: 'Contas',  area: 'NECESSIDADES', peso: 1, icone: '💡' }
+          { id: 'demo1', nome: 'Aluguel',         area: 'NECESSIDADES', peso: 3, icone: '🏠' },
+          { id: 'demo2', nome: 'Mercado',         area: 'NECESSIDADES', peso: 2, icone: '🛒' },
+          { id: 'demo3', nome: 'Contas básicas',  area: 'NECESSIDADES', peso: 1, icone: '💡' }
         ]},
         DESEJOS: { percentual: 0.30, valorTotal: 0, somaPesos: 0, potes: [
-          { id: 'demo4', nome: 'Lazer',        area: 'DESEJOS', peso: 2, icone: '🎭' },
-          { id: 'demo5', nome: 'Restaurantes', area: 'DESEJOS', peso: 1, icone: '🍽️' }
+          { id: 'demo4', nome: 'Lazer',         area: 'DESEJOS', peso: 2, icone: '🎭' },
+          { id: 'demo5', nome: 'Restaurantes',  area: 'DESEJOS', peso: 1, icone: '🍽️' }
         ]},
         INVESTIMENTOS: { percentual: 0.20, valorTotal: 0, somaPesos: 0, potes: [
           { id: 'demo6', nome: 'Reserva',       area: 'INVESTIMENTOS', peso: 2, icone: '🛟' },
@@ -347,9 +365,8 @@ async function init() {
 
   try {
     estado = await apiGet();
-    setStatus('Pronto.', 'ok');
     render();
-  } catch (_) { /* status já tratado */ }
+  } catch (_) {}
 }
 
 document.addEventListener('DOMContentLoaded', init);
