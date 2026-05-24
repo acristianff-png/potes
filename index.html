@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cascata Financeira — Regra 50/30/20</title>
+  <title>Cascata · Regra 50/30/20</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet"
   />
 
@@ -16,159 +16,167 @@
 </head>
 <body>
 
-  <!-- Background atmosférico -->
-  <div class="bg-noise" aria-hidden="true"></div>
-  <div class="bg-glow bg-glow--top" aria-hidden="true"></div>
-  <div class="bg-glow bg-glow--bottom" aria-hidden="true"></div>
+  <!-- Vinheta atmosférica sutil -->
+  <div class="vignette" aria-hidden="true"></div>
 
   <main class="app">
 
     <!-- HEADER -->
-    <header class="hero">
-      <div class="hero__brand">
-        <span class="hero__eyebrow">Sistema · 50/30/20 ponderado</span>
-        <h1 class="hero__title">Cascata <em>Financeira</em></h1>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__dot"></span>
+        <span class="brand__name">cascata</span>
+        <span class="brand__tag">·  50 / 30 / 20</span>
       </div>
 
-      <div class="hero__salary" id="salaryCard">
-        <label class="hero__label" for="salaryInput">Salário base</label>
-        <div class="hero__input-wrap">
-          <span class="hero__currency">R$</span>
+      <div class="salary">
+        <span class="salary__label">salário base</span>
+        <div class="salary__input-wrap">
+          <span class="salary__currency">R$</span>
           <input
             id="salaryInput"
             type="text"
             inputmode="decimal"
-            class="hero__input"
+            class="salary__input"
             placeholder="0,00"
           />
+          <button id="salarySave" class="salary__save" type="button" aria-label="Atualizar salário">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
         </div>
-        <button id="salarySave" class="hero__save" type="button">Atualizar</button>
       </div>
     </header>
 
-    <!-- POTE CENTRAL (SALÁRIO) -->
-    <section class="central" aria-label="Pote central com salário total">
-      <div class="central__pot" id="centralPot" style="--fill: 0%;">
-        <div class="central__lip"></div>
-        <div class="central__liquid">
-          <svg class="central__wave" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0,20 Q150,0 300,20 T600,20 L600,40 L0,40 Z"
-              fill="currentColor"
-              opacity="0.6"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="translate"
-                from="0 0" to="-300 0"
-                dur="6s" repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="M0,25 Q150,5 300,25 T600,25 L600,40 L0,40 Z"
-              fill="currentColor"
-              opacity="0.9"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="translate"
-                from="-300 0" to="0 0"
-                dur="8s" repeatCount="indefinite"
-              />
-            </path>
-          </svg>
-        </div>
-        <div class="central__content">
-          <span class="central__caption">Líquido total</span>
-          <strong class="central__value" id="centralValue">R$ 0,00</strong>
-        </div>
-      </div>
-
-      <!-- Canos descendentes em SVG -->
-      <svg class="pipes" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-        <path class="pipes__path" d="M500,0 L500,40 Q500,80 200,120 L200,160" />
-        <path class="pipes__path" d="M500,0 L500,80 L500,160" />
-        <path class="pipes__path" d="M500,0 L500,40 Q500,80 800,120 L800,160" />
-      </svg>
-    </section>
-
-    <!-- TRÊS ÁREAS -->
+    <!-- ÁREAS -->
     <section class="areas">
 
-      <article class="area area--necessidades" data-area="NECESSIDADES">
-        <header class="area__header">
+      <article class="area" data-area="NECESSIDADES" style="--coin-count: 25;">
+        <header class="area__head">
           <span class="area__pct">50%</span>
           <h2 class="area__name">Necessidades</h2>
           <span class="area__total" id="totalNECESSIDADES">R$ 0,00</span>
         </header>
 
-        <div class="area__pots" id="potsNECESSIDADES"></div>
+        <div class="jar-stage">
+          <div class="jar" data-jar="NECESSIDADES">
+            <div class="jar__lid"></div>
+            <div class="jar__neck"></div>
+            <div class="jar__body">
+              <div class="jar__coins"></div>
+              <div class="jar__shine"></div>
+              <div class="jar__shine jar__shine--right"></div>
+              <div class="jar__rim"></div>
+            </div>
+            <div class="jar__shadow"></div>
+          </div>
+        </div>
 
-        <button class="area__add" data-add="NECESSIDADES" type="button">
-          <span>+</span> adicionar pote
+        <div class="sublist" id="potsNECESSIDADES"></div>
+
+        <button class="addbtn" data-add="NECESSIDADES" type="button">
+          <span class="addbtn__icon">+</span>
+          <span>Adicionar pote</span>
         </button>
       </article>
 
-      <article class="area area--desejos" data-area="DESEJOS">
-        <header class="area__header">
+      <article class="area" data-area="DESEJOS" style="--coin-count: 15;">
+        <header class="area__head">
           <span class="area__pct">30%</span>
           <h2 class="area__name">Desejos</h2>
           <span class="area__total" id="totalDESEJOS">R$ 0,00</span>
         </header>
 
-        <div class="area__pots" id="potsDESEJOS"></div>
+        <div class="jar-stage">
+          <div class="jar" data-jar="DESEJOS">
+            <div class="jar__lid"></div>
+            <div class="jar__neck"></div>
+            <div class="jar__body">
+              <div class="jar__coins"></div>
+              <div class="jar__shine"></div>
+              <div class="jar__shine jar__shine--right"></div>
+              <div class="jar__rim"></div>
+            </div>
+            <div class="jar__shadow"></div>
+          </div>
+        </div>
 
-        <button class="area__add" data-add="DESEJOS" type="button">
-          <span>+</span> adicionar pote
+        <div class="sublist" id="potsDESEJOS"></div>
+
+        <button class="addbtn" data-add="DESEJOS" type="button">
+          <span class="addbtn__icon">+</span>
+          <span>Adicionar pote</span>
         </button>
       </article>
 
-      <article class="area area--investimentos" data-area="INVESTIMENTOS">
-        <header class="area__header">
+      <article class="area" data-area="INVESTIMENTOS" style="--coin-count: 10;">
+        <header class="area__head">
           <span class="area__pct">20%</span>
           <h2 class="area__name">Investimentos</h2>
           <span class="area__total" id="totalINVESTIMENTOS">R$ 0,00</span>
         </header>
 
-        <div class="area__pots" id="potsINVESTIMENTOS"></div>
+        <div class="jar-stage">
+          <div class="jar" data-jar="INVESTIMENTOS">
+            <div class="jar__lid"></div>
+            <div class="jar__neck"></div>
+            <div class="jar__body">
+              <div class="jar__coins"></div>
+              <div class="jar__shine"></div>
+              <div class="jar__shine jar__shine--right"></div>
+              <div class="jar__rim"></div>
+            </div>
+            <div class="jar__shadow"></div>
+          </div>
+        </div>
 
-        <button class="area__add" data-add="INVESTIMENTOS" type="button">
-          <span>+</span> adicionar pote
+        <div class="sublist" id="potsINVESTIMENTOS"></div>
+
+        <button class="addbtn" data-add="INVESTIMENTOS" type="button">
+          <span class="addbtn__icon">+</span>
+          <span>Adicionar pote</span>
         </button>
       </article>
 
     </section>
 
-    <footer class="foot">
-      <span id="statusMsg" class="foot__status">Pronto.</span>
-      <span class="foot__hint">Os pesos são relativos dentro de cada área. Edite e veja a redistribuição em tempo real.</span>
+    <footer class="footbar">
+      <span id="statusMsg" class="footbar__status">Pronto</span>
+      <span class="footbar__hint">Clique em um pote para editar · Pesos relativos dentro da área</span>
     </footer>
   </main>
 
-  <!-- MODAL: adicionar/editar pote -->
+  <!-- MODAL: novo/editar pote -->
   <div class="modal" id="modal" hidden>
     <div class="modal__backdrop" data-close></div>
     <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button class="modal__close" type="button" data-close aria-label="Fechar">×</button>
+      <button class="modal__close" type="button" data-close aria-label="Fechar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <span class="modal__eyebrow" id="modalSubtitle">Necessidades</span>
       <h3 id="modalTitle" class="modal__title">Novo pote</h3>
-      <span class="modal__subtitle" id="modalSubtitle">Necessidades</span>
 
       <form id="modalForm" class="modal__form">
         <input type="hidden" id="formId" />
         <input type="hidden" id="formArea" />
 
         <label class="field">
-          <span class="field__label">Nome</span>
-          <input id="formNome" type="text" class="field__input" required maxlength="40" />
+          <span class="field__label">Nome do pote</span>
+          <input id="formNome" type="text" class="field__input" required maxlength="40" placeholder="Ex.: Aluguel" />
         </label>
 
         <label class="field">
-          <span class="field__label">Peso <small>(quanto maior, mais R$ recebe na área)</small></span>
+          <span class="field__label">
+            Peso
+            <small>quanto maior o peso, mais R$ esse pote recebe</small>
+          </span>
           <input id="formPeso" type="number" class="field__input" min="0.1" step="0.1" value="1" required />
         </label>
 
         <label class="field">
-          <span class="field__label">Ícone <small>(emoji opcional)</small></span>
+          <span class="field__label">
+            Ícone <small>emoji opcional</small>
+          </span>
           <input id="formIcone" type="text" class="field__input" maxlength="2" placeholder="🪙" />
         </label>
 
