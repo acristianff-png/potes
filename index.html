@@ -16,7 +16,6 @@
 </head>
 <body>
 
-  <!-- Vinheta atmosférica sutil -->
   <div class="vignette" aria-hidden="true"></div>
 
   <main class="app">
@@ -47,10 +46,39 @@
       </div>
     </header>
 
+    <!-- POTE CENTRAL · Salário líquido total -->
+    <section class="centerpiece">
+      <div class="centerpiece__stage">
+        <div class="jar jar--central" data-jar="CENTRAL">
+          <div class="jar__lid"></div>
+          <div class="jar__neck"></div>
+          <div class="jar__body">
+            <div class="jar__coins"></div>
+            <div class="jar__shine"></div>
+            <div class="jar__shine jar__shine--right"></div>
+            <div class="jar__rim"></div>
+          </div>
+          <div class="jar__shadow"></div>
+        </div>
+      </div>
+
+      <div class="centerpiece__label">
+        <span class="centerpiece__eyebrow">líquido a distribuir</span>
+        <span class="centerpiece__value" id="centralValue">R$ 0,00</span>
+      </div>
+
+      <!-- Canos descendentes -->
+      <svg class="pipes" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">
+        <path class="pipes__path pipes__path--needs"    d="M300,0 C300,30 100,40 100,90" />
+        <path class="pipes__path pipes__path--wants"    d="M300,0 L300,90" />
+        <path class="pipes__path pipes__path--invest"   d="M300,0 C300,30 500,40 500,90" />
+      </svg>
+    </section>
+
     <!-- ÁREAS -->
     <section class="areas">
 
-      <article class="area" data-area="NECESSIDADES" style="--coin-count: 25;">
+      <article class="area area--needs" data-area="NECESSIDADES" style="--coin-count: 25;">
         <header class="area__head">
           <span class="area__pct">50%</span>
           <h2 class="area__name">Necessidades</h2>
@@ -79,7 +107,7 @@
         </button>
       </article>
 
-      <article class="area" data-area="DESEJOS" style="--coin-count: 15;">
+      <article class="area area--wants" data-area="DESEJOS" style="--coin-count: 15;">
         <header class="area__head">
           <span class="area__pct">30%</span>
           <h2 class="area__name">Desejos</h2>
@@ -108,7 +136,7 @@
         </button>
       </article>
 
-      <article class="area" data-area="INVESTIMENTOS" style="--coin-count: 10;">
+      <article class="area area--invest" data-area="INVESTIMENTOS" style="--coin-count: 10;">
         <header class="area__head">
           <span class="area__pct">20%</span>
           <h2 class="area__name">Investimentos</h2>
@@ -145,7 +173,7 @@
     </footer>
   </main>
 
-  <!-- MODAL: novo/editar pote -->
+  <!-- MODAL -->
   <div class="modal" id="modal" hidden>
     <div class="modal__backdrop" data-close></div>
     <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
