@@ -4,7 +4,7 @@
    ============================================================================ */
 
 // >>> Cole aqui a URL do seu Web App após o Deploy do Apps Script <<<
-const WEB_APP_URL = 'https://script.google.com/macros/s/COLE_AQUI_SUA_URL/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbye94J0ETXEMku1xSCWCxpxkQi8H5Y9bnt7Lt2OdS4SrMho9yvRk_Msgy5gUWHtmwBU/exec';
 
 // Tempo total da animação de preenchimento (deve coincidir com --dur-fill no CSS)
 const FILL_DURATION_MS = 1400;
